@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐔 Chicken Fight AI Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        body {
+            background: #0a0a0f;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 50, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 50, 100, 0.05) 0%, transparent 50%);
+        }
+        .glass-panel {
+            background: rgba(20, 20, 30, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .neon-red {
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), inset 0 0 20px rgba(239, 68, 68, 0.1);
+        }
+        .neon-blue {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), inset 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+        .neon-green {
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.4), inset 0 0 20px rgba(34, 197, 94, 0.1);
+        }
+        .bead {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .bead::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%);
+            border-radius: 50%;
+        }
+        .bead-red {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4), inset 0 2px 4px rgba(255,255,255,0.2);
+        }
+        .bead-blue {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4), inset 0 2px 4px rgba(255,255,255,0.2);
+        }
+        .bead-tie {
+            background: linear-gradient(135deg, #16a34a 0%, #166534 100%);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4), inset 0 2px 4px rgba(255,255,255,0.2);
+        }
+        .bead-empty {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .prediction-card {
+            background: linear-gradient(135deg, rgba(30, 30, 45, 0.8) 0%, rgba(20, 20, 30, 0.6) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .stat-bar {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 999px;
+            overflow: hidden;
+            height: 8px;
+        }
+        .stat-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+        .glow-text {
+            text-shadow: 0 0 20px currentColor;
+        }
+        .pattern-cell {
+            transition: all 0.2s;
+        }
+        .pattern-cell:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }
+        .bet-button {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .bet-button:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .bet-button:active {
+            transform: translateY(0);
+        }
+        .live-indicator {
+            animation: live-pulse 2s infinite;
+        }
+        @keyframes live-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 4px;
+        }
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .trend-up { color: #22c55e; }
+        .trend-down { color: #ef4444; }
+        .confidence-high { color: #22c55e; }
+        .confidence-medium { color: #eab308; }
+        .confidence-low { color: #ef4444; }
+        
+        /* FIXED: Chart container needs explicit height */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen p-4 md:p-6">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/20">
+                🐔
+            </div>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                    Chicken Fight AI
+                </h1>
+                <p class="text-sm text-gray-500 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 live-indicator"></span>
+                    Neural Network Prediction Engine v2.0
+                </p>
+            </div>
+        </div>
+        
+        <div class="flex gap-3">
+            <button onclick="syncWithPlugin()" class="glass-panel px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/5 transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Sync Plugin
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Bead Road & History -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Bead Road Display -->
+            <div class="glass-panel rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        Bead Road Pattern
+                    </h2>
+                    <div class="flex gap-2 text-xs">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-600"></span>Red</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-600"></span>Blue</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-600"></span>Tie</span>
+                    </div>
+                </div>
+                
+                <div id="beadRoad" class="grid grid-cols-16 gap-1 p-4 bg-black/20 rounded-xl overflow-x-auto" style="grid-template-columns: repeat(16, minmax(0, 1fr));">
+                    <!-- Generated by JS -->
+                </div>
+                
+                <div class="mt-4 flex justify-between text-sm text-gray-400 mono">
+                    <span>Last 96 Results</span>
+                    <span id="totalHands">0 hands recorded</span>
+                </div>
+            </div>
+
+            <!-- Pattern Analysis -->
+            <div class="glass-panel rounded-2xl p-6">
+                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Pattern Heatmap
+                </h2>
+                <div id="patternHeatmap" class="heatmap-grid max-h-48 overflow-y-auto">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <!-- Statistics Chart - FIXED -->
+            <div class="glass-panel rounded-2xl p-6">
+                <h2 class="text-lg font-semibold mb-4">Win Rate Trends</h2>
+                <!-- Added chart-container div with explicit height -->
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: AI Prediction & Controls -->
+        <div class="lg:col-span-5 space-y-6">
+            
+            <!-- Main Prediction Card -->
+            <div class="prediction-card rounded-2xl p-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-transparent rounded-full blur-2xl"></div>
+                
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <p class="text-sm text-gray-400 mb-1">AI Prediction</p>
+                            <div id="predictionResult" class="text-4xl font-bold glow-text text-gray-500">ANALYZING...</div>
+                        </div>
+                        <div id="confidenceBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-gray-800 text-gray-500">
+            WAITING
+        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-red-400 font-medium">Red Confidence</span>
+                                <span id="redPercent" class="mono">0%</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div id="redBar" class="stat-fill bg-gradient-to-r from-red-600 to-red-400" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-blue-400 font-medium">Blue Confidence</span>
+                                <span id="bluePercent" class="mono">0%</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div id="blueBar" class="stat-fill bg-gradient-to-r from-blue-600 to-blue-400" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-green-400 font-medium">Tie Probability</span>
+                                <span id="tiePercent" class="mono">0%</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div id="tieBar" class="stat-fill bg-gradient-to-r from-green-600 to-green-400" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="recommendation" class="mt-6 p-4 rounded-xl bg-black/30 border border-white/5 text-sm text-gray-400">
+                        Enter at least 10 results to activate prediction engine
+                    </div>
+                </div>
+            </div>
+
+	    <!-- Input Controls -->
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Manual Input</h3>
+                
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <button onclick="addResult('R')" class="bet-button py-4 rounded-xl font-bold text-red-400 border-red-500/20 hover:border-red-500/40">
+                        <div class="text-2xl mb-1">🔴</div>
+                        <div class="text-sm">RED</div>
+                    </button>
+                    <button onclick="addResult('B')" class="bet-button py-4 rounded-xl font-bold text-blue-400 border-blue-500/20 hover:border-blue-500/40">
+                        <div class="text-2xl mb-1">🔵</div>
+                        <div class="text-sm">BLUE</div>
+                    </button>
+                    <button onclick="addResult('T')" class="bet-button py-4 rounded-xl font-bold text-green-400 border-green-500/20 hover:border-green-500/40">
+                        <div class="text-2xl mb-1">🟢</div>
+                        <div class="text-sm">TIE</div>
+                    </button>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="undoLast()" class="flex-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-gray-400 transition">
+                        Undo
+                    </button>
+                    <button onclick="clearHistory()" class="flex-1 py-2 rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-sm text-gray-400 transition">
+                        Clear All
+                    </button>
+                    <button onclick="simulateBatch()" class="flex-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-sm text-gray-400 transition">
+                        Simulate 10
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Bias Detection -->
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">RNG Bias Detection</h3>
+                
+                <div id="biasStatus" class="flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="font-medium text-green-400">RNG Appears Fair</p>
+                        <p class="text-xs text-gray-500">Chi-square: <span id="chiSquare">0.00</span></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="p-2 rounded-lg bg-black/20">
+                        <div id="redStreak" class="text-lg font-bold text-red-400 mono">0</div>
+                        <div class="text-gray-500">Red Streak</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-black/20">
+                        <div id="blueStreak" class="text-lg font-bold text-blue-400 mono">0</div>
+                        <div class="text-gray-500">Blue Streak</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-black/20">
+                        <div id="alternating" class="text-lg font-bold text-yellow-400 mono">0%</div>
+                        <div class="text-gray-500">Choppiness</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Log -->
+            <div class="glass-panel rounded-2xl p-4 max-h-64 overflow-hidden flex flex-col">
+                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Session Log</h3>
+                <div id="sessionLog" class="flex-1 overflow-y-auto space-y-2 text-xs mono">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // State Management
+        let history = [];
+        let balance = 1000;
+        let baseBet = 50;
+        let currentBet = 50;
+        let betStrategy = 'martingale';
+        let autoPlay = false;
+        let consecutiveLosses = 0;
+        let sessionProfit = 0;
+        let chartInstance = null;
+
+        // Neural Network State (Simple Perceptron)
+        let neuralNet = JSON.parse(localStorage.getItem('chickenNet')) || {
+            weights: Array(12).fill(0).map(() => Math.random() * 2 - 1),
+            bias: Math.random() * 2 - 1,
+            learningRate: 0.01
+        };
+
+        // Pattern Memory
+        let patterns = JSON.parse(localStorage.getItem('patterns')) || {};
+        let transitionMatrix = {
+            'R': { 'R': 0, 'B': 0, 'T': 0 },
+            'B': { 'R': 0, 'B': 0, 'T': 0 },
+            'T': { 'R': 0, 'B': 0, 'T': 0 }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            renderBeadRoad();
+            updateStats();
+            loadFromStorage();
+        });
+
+        function initChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            // FIXED: Proper chart initialization with better configuration
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Red Win Rate %',
+                        data: [],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        borderWidth: 2
+                    }, {
+                        label: 'Blue Win Rate %',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            labels: {
+                                color: '#9ca3af',
+                                font: { size: 11 },
+                                boxWidth: 10
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { 
+                                color: '#6b7280', 
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function addResult(result) {
+            history.push(result);
+            if (history.length > 300) history.shift();
+            
+            updateTransitionMatrix();
+            trainNeuralNetwork();
+            renderBeadRoad();
+            updateStats();
+            generatePrediction();
+            logAction(`Result: ${result === 'R' ? 'RED' : result === 'B' ? 'BLUE' : 'TIE'}`);
+            
+            if (autoPlay) {
+                executeAutoBet(result);
+            }
+            
+            saveToStorage();
+        }
+
+        function updateTransitionMatrix() {
+            if (history.length < 2) return;
+            const prev = history[history.length - 2];
+            const curr = history[history.length - 1];
+            transitionMatrix[prev][curr]++;
+        }
+
+        function trainNeuralNetwork() {
+            if (history.length < 12) return;
+            
+            const input = history.slice(-12).map(r => r === 'R' ? 1 : r === 'B' ? -1 : 0);
+            const target = history[history.length - 1] === 'R' ? 1 : 0;
+            
+            // Forward pass
+            let sum = neuralNet.bias;
+            for (let i = 0; i < 12; i++) {
+                sum += input[i] * neuralNet.weights[i];
+            }
+            const output = sigmoid(sum);
+            
+            // Backpropagation
+            const error = target - output;
+            for (let i = 0; i < 12; i++) {
+                neuralNet.weights[i] += neuralNet.learningRate * error * input[i];
+            }
+            neuralNet.bias += neuralNet.learningRate * error;
+        }
+
+        function sigmoid(x) {
+            return 1 / (1 + Math.exp(-x));
+        }
+
+        function generatePrediction() {
+            if (history.length < 10) {
+                document.getElementById('predictionResult').textContent = 'ANALYZING...';
+                document.getElementById('predictionResult').className = 'text-4xl font-bold glow-text text-gray-500';
+                document.getElementById('confidenceBadge').textContent = 'WAITING';
+                document.getElementById('confidenceBadge').className = 'px-3 py-1 rounded-full text-xs font-bold bg-gray-800 text-gray-500';
+                return;
+            }
+
+            const cleanHistory = history.filter(x => x !== 'T');
+            if (cleanHistory.length < 8) return;
+
+            // Neural Network Prediction
+            const input = cleanHistory.slice(-12).map(r => r === 'R' ? 1 : r === 'B' ? -1 : 0);
+            while (input.length < 12) input.unshift(0);
+            
+            let nnSum = neuralNet.bias;
+            for (let i = 0; i < 12; i++) {
+                nnSum += input[i] * neuralNet.weights[i];
+            }
+            const nnRedProb = sigmoid(nnSum);
+
+            // Markov Chain Prediction
+            const lastResult = cleanHistory[cleanHistory.length - 1];
+            const transitions = transitionMatrix[lastResult];
+            const total = transitions.R + transitions.B + transitions.T;
+            let markovRedProb = 0.5;
+            if (total > 0) {
+                markovRedProb = transitions.R / (transitions.R + transitions.B);
+            }
+
+            // Pattern Analysis
+            const pattern3 = cleanHistory.slice(-3).join('');
+            const pattern4 = cleanHistory.slice(-4).join('');
+            let patternBias = 0.5;
+            
+            if (patterns[pattern4] && patterns[pattern4].count > 5) {
+                patternBias = patterns[pattern4].red / patterns[pattern4].count;
+            } else if (patterns[pattern3] && patterns[pattern3].count > 3) {
+                patternBias = patterns[pattern3].red / patterns[pattern3].count;
+            }
+
+            // Streak Analysis
+            let streak = 1;
+            for (let i = cleanHistory.length - 1; i > 0; i--) {
+                if (cleanHistory[i] === cleanHistory[i-1]) streak++;
+                else break;
+            }
+            const streakFactor = Math.min(streak / 6, 1) * 0.1;
+
+            // Combine predictions (weighted ensemble)
+            const ensembleRed = (nnRedProb * 0.4) + (markovRedProb * 0.3) + (patternBias * 0.3);
+            const finalRed = ensembleRed + (cleanHistory[cleanHistory.length-1] === 'R' ? streakFactor : -streakFactor);
+            const clampedRed = Math.max(0.1, Math.min(0.9, finalRed));
+
+            const redConf = Math.round(clampedRed * 100);
+            const blueConf = Math.round((1 - clampedRed) * 100);
+            const tieProb = Math.round((history.filter(x => x === 'T').length / history.length) * 100) || 5;
+
+            // Update UI
+            document.getElementById('redPercent').textContent = redConf + '%';
+            document.getElementById('bluePercent').textContent = blueConf + '%';
+            document.getElementById('tiePercent').textContent = tieProb + '%';
+            
+            document.getElementById('redBar').style.width = redConf + '%';
+            document.getElementById('blueBar').style.width = blueConf + '%';
+            document.getElementById('tieBar').style.width = tieProb + '%';
+
+            const prediction = redConf > blueConf ? 'RED' : 'BLUE';
+            const confidence = Math.abs(redConf - blueConf);
+            const predEl = document.getElementById('predictionResult');
+            const badgeEl = document.getElementById('confidenceBadge');
+
+            predEl.textContent = prediction;
+            predEl.className = `text-4xl font-bold glow-text ${prediction === 'RED' ? 'text-red-500' : 'text-blue-500'}`;
+
+            if (confidence > 25) {
+                badgeEl.textContent = 'HIGH CONFIDENCE';
+                badgeEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-green-500/20 text-green-400 border border-green-500/30';
+            } else if (confidence > 15) {
+                badgeEl.textContent = 'MEDIUM CONFIDENCE';
+                badgeEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30';
+            } else {
+                badgeEl.textContent = 'LOW CONFIDENCE';
+                badgeEl.className = 'px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30';
+            }
+
+            // Recommendation
+            const recEl = document.getElementById('recommendation');
+            if (confidence < 10) {
+                recEl.innerHTML = '<span class="text-yellow-400">⚠️ SKIP:</span> Market too chaotic. Wait for clearer pattern.';
+                recEl.className = 'mt-6 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm';
+            } else if (prediction === 'RED' && redConf > 65) {
+                recEl.innerHTML = `<span class="text-red-400">🎯 BET RED:</span> Strong bullish momentum detected. Suggested bet: $${calculateBetSize()}`;
+                recEl.className = 'mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm';
+            } else if (prediction === 'BLUE' && blueConf > 65) {
+                recEl.innerHTML = `<span class="text-blue-400">🎯 BET BLUE:</span> Strong bearish momentum detected. Suggested bet: $${calculateBetSize()}`;
+                recEl.className = 'mt-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm';
+            } else {
+                recEl.innerHTML = `<span class="text-gray-400">⏳ WAIT:</span> Pattern forming. Confidence at ${confidence}%.`;
+                recEl.className = 'mt-6 p-4 rounded-xl bg-gray-500/10 border border-gray-500/20 text-sm';
+            }
+
+            updatePatternHeatmap();
+        }
+
+        function calculateBetSize() {
+            if (betStrategy === 'martingale') {
+                return baseBet * Math.pow(2, consecutiveLosses);
+            } else if (betStrategy === 'kelly') {
+                const edge = 0.05; // Assumed edge
+                return Math.floor(balance * edge);
+            }
+            return baseBet;
+        }
+
+        function executeAutoBet(actualResult) {
+            const prediction = document.getElementById('predictionResult').textContent;
+            if (prediction === 'ANALYZING...') return;
+
+            const betAmount = calculateBetSize();
+            const won = (prediction === 'RED' && actualResult === 'R') || 
+                       (prediction === 'BLUE' && actualResult === 'B');
+
+            if (won) {
+                balance += betAmount * 0.75; // 1.75x payout minus stake
+                sessionProfit += betAmount * 0.75;
+                consecutiveLosses = 0;
+                logAction(`✅ WON +$${(betAmount * 0.75).toFixed(0)} | Balance: $${balance.toFixed(0)}`);
+            } else {
+                balance -= betAmount;
+                sessionProfit -= betAmount;
+                consecutiveLosses++;
+                logAction(`❌ LOST -$${betAmount} | Balance: $${balance.toFixed(0)}`);
+            }
+
+            updateBankroll();
+        }
+
+        function updateBankroll() {
+            // Check if elements exist before updating
+            const balanceDisplay = document.getElementById('balanceDisplay');
+            const profitDisplay = document.getElementById('profitDisplay');
+            
+            if (balanceDisplay) {
+                balanceDisplay.textContent = `$${balance.toFixed(0)}`;
+            }
+            if (profitDisplay) {
+                profitDisplay.textContent = `${sessionProfit >= 0 ? '+' : ''}$${sessionProfit.toFixed(0)}`;
+                profitDisplay.className = `text-2xl font-bold mono ${sessionProfit >= 0 ? 'text-green-400' : 'text-red-400'}`;
+            }
+        }
+
+        function renderBeadRoad() {
+            const container = document.getElementById('beadRoad');
+            container.innerHTML = '';
+            
+            // Convert to bead road format (columns)
+            const columns = [];
+            let currentCol = [];
+            
+            history.forEach((h, i) => {
+                if (i === 0) {
+                    currentCol.push(h);
+                } else {
+                    const prev = history[i-1];
+                    if (h === prev && currentCol.length < 6) {
+                        currentCol.push(h);
+                    } else {
+                        columns.push([...currentCol]);
+                        currentCol = [h];
+                    }
+                }
+            });
+            if (currentCol.length > 0) columns.push(currentCol);
+            
+            // Keep only last 16 columns
+            const displayCols = columns.slice(-16);
+            
+            // Render grid (6 rows x 16 cols)
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 16; col++) {
+                    const bead = document.createElement('div');
+                    bead.className = 'bead';
+                    
+                    if (col < displayCols.length && row < displayCols[col].length) {
+                        const val = displayCols[col][row];
+                        bead.classList.add(val === 'R' ? 'bead-red' : val === 'B' ? 'bead-blue' : 'bead-tie');
+                        bead.textContent = val;
+                    } else {
+                        bead.classList.add('bead-empty');
+                    }
+                    
+                    container.appendChild(bead);
+                }
+            }
+            
+            document.getElementById('totalHands').textContent = `${history.length} hands recorded`;
+        }
+
+        function updatePatternHeatmap() {
+            const container = document.getElementById('patternHeatmap');
+            container.innerHTML = '';
+            
+            // Analyze last 50 non-tie results for patterns
+            const clean = history.filter(x => x !== 'T').slice(-50);
+            if (clean.length < 4) return;
+            
+            const patternStats = {};
+            
+            for (let i = 3; i < clean.length; i++) {
+                const pattern = clean.slice(i-3, i).join('');
+                const next = clean[i];
+                
+                if (!patternStats[pattern]) {
+                    patternStats[pattern] = { R: 0, B: 0, total: 0 };
+                }
+                patternStats[pattern][next]++;
+                patternStats[pattern].total++;
+            }
+            
+            // Sort by frequency
+            const sorted = Object.entries(patternStats)
+                .sort((a, b) => b[1].total - a[1].total)
+                .slice(0, 24);
+            
+            sorted.forEach(([pattern, stats]) => {
+                const redRate = stats.R / stats.total;
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell pattern-cell';
+                
+                // Color based on bias
+                if (redRate > 0.6) {
+                    cell.style.background = `rgba(239, 68, 68, ${0.2 + redRate * 0.5})`;
+                    cell.style.color = '#fca5a5';
+                } else if (redRate < 0.4) {
+                    cell.style.background = `rgba(59, 130, 246, ${0.2 + (1-redRate) * 0.5})`;
+                    cell.style.color = '#93c5fd';
+                } else {
+                    cell.style.background = 'rgba(255,255,255,0.05)';
+                    cell.style.color = '#9ca3af';
+                }
+                
+                cell.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-xs font-bold">${pattern}</div>
+                        <div class="text-[8px] opacity-70">${stats.total}x</div>
+                    </div>
+                `;
+                cell.title = `Pattern ${pattern}: ${stats.R}R / ${stats.B}B`;
+                container.appendChild(cell);
+            });
+        }
+
+        function updateStats() {
+            if (history.length === 0) return;
+            
+            const clean = history.filter(x => x !== 'T');
+            const redCount = clean.filter(x => x === 'R').length;
+            const blueCount = clean.filter(x => x === 'B').length;
+            const tieCount = history.filter(x => x === 'T').length;
+            
+            // Calculate streaks
+            let redStreak = 0, blueStreak = 0, currentStreak = 0, currentType = null;
+            let alternations = 0;
+            
+            for (let i = 0; i < clean.length; i++) {
+                if (i > 0 && clean[i] !== clean[i-1]) alternations++;
+                
+                if (clean[i] !== currentType) {
+                    currentType = clean[i];
+                    currentStreak = 1;
+                } else {
+                    currentStreak++;
+                }
+                
+                if (currentType === 'R' && currentStreak > redStreak) redStreak = currentStreak;
+                if (currentType === 'B' && currentStreak > blueStreak) blueStreak = currentStreak;
+            }
+            
+            document.getElementById('redStreak').textContent = redStreak;
+            document.getElementById('blueStreak').textContent = blueStreak;
+            document.getElementById('alternating').textContent = Math.round((alternations / clean.length) * 100) + '%';
+            
+            // Chi-square test for RNG fairness
+            const expected = clean.length / 2;
+            const chiSquare = (Math.pow(redCount - expected, 2) / expected) + (Math.pow(blueCount - expected, 2) / expected);
+            document.getElementById('chiSquare').textContent = chiSquare.toFixed(2);
+            
+            const biasStatus = document.getElementById('biasStatus');
+            if (chiSquare > 6.63) {
+                biasStatus.className = 'flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 mb-4';
+                biasStatus.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="font-medium text-red-400">RNG Bias Detected!</p>
+                        <p class="text-xs text-gray-500">Chi-square: ${chiSquare.toFixed(2)} (p&lt;0.01)</p>
+                    </div>
+                `;
+            }
+            
+            // FIXED: Chart update logic - properly update data arrays
+            if (chartInstance && clean.length > 10) {
+                const windowSize = 20;
+                const labels = [];
+                const redData = [];
+                const blueData = [];
+                
+                for (let i = windowSize; i <= clean.length; i++) {
+                    const window = clean.slice(i - windowSize, i);
+                    const red = window.filter(x => x === 'R').length;
+                    labels.push(i);
+                    redData.push((red / windowSize) * 100);
+                    blueData.push(((windowSize - red) / windowSize) * 100);
+                }
+                
+                // FIXED: Properly assign new data arrays
+                chartInstance.data.labels = labels;
+                chartInstance.data.datasets[0].data = redData;
+                chartInstance.data.datasets[1].data = blueData;
+                
+                // Use 'active' mode for smoother updates
+                chartInstance.update('active');
+            }
+        }
+
+        function logAction(message) {
+            const log = document.getElementById('sessionLog');
+            const entry = document.createElement('div');
+            entry.className = 'flex justify-between items-center py-1 border-b border-white/5 last:border-0';
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            entry.innerHTML = `<span class="text-gray-500">[${time}]</span> <span>${message}</span>`;
+            log.insertBefore(entry, log.firstChild);
+        }
+
+        function updateBetDisplay() {
+            const betSizeEl = document.getElementById('betSize');
+            if (betSizeEl) {
+                baseBet = parseInt(betSizeEl.value);
+                const betDisplay = document.getElementById('betDisplay');
+                if (betDisplay) {
+                    betDisplay.textContent = '$' + baseBet;
+                }
+            }
+        }
+
+        function setBetStrategy(strategy) {
+            betStrategy = strategy;
+            ['martingale', 'kelly', 'flat'].forEach(s => {
+                const btn = document.getElementById(s + 'Btn');
+                if (btn) {
+                    if (s === strategy) {
+                        btn.className = 'flex-1 py-2 px-3 rounded-lg text-xs font-medium bg-purple-600/20 text-purple-400 border border-purple-600/30 hover:bg-purple-600/30 transition';
+                    } else {
+                        btn.className = 'flex-1 py-2 px-3 rounded-lg text-xs font-medium bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 transition';
+                    }
+                }
+            });
+        }
+
+        function toggleAutoPlay() {
+            autoPlay = !autoPlay;
+            const btn = document.getElementById('autoPlayBtn');
+            if (btn) {
+                if (autoPlay) {
+                    btn.classList.remove('text-yellow-400');
+                    btn.classList.add('text-green-400', 'bg-green-500/10', 'border-green-500/30');
+                    btn.innerHTML = `
+                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Auto-Bet: ON
+                    `;
+                    logAction('🤖 Auto-betting activated');
+                } else {
+                    btn.classList.add('text-yellow-400');
+                    btn.classList.remove('text-green-400', 'bg-green-500/10', 'border-green-500/30');
+                    btn.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Auto-Bet: OFF
+                    `;
+                    logAction('⏹️ Auto-betting deactivated');
+                }
+            }
+        }
+
+        function undoLast() {
+            if (history.length > 0) {
+                history.pop();
+                renderBeadRoad();
+                updateStats();
+                generatePrediction();
+                logAction('↩️ Undid last entry');
+                saveToStorage();
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('Clear all history? This cannot be undone.')) {
+                history = [];
+                consecutiveLosses = 0;
+                renderBeadRoad();
+                updateStats();
+                generatePrediction();
+                logAction('🗑️ History cleared');
+                saveToStorage();
+            }
+        }
+
+        function simulateBatch() {
+            const outcomes = ['R', 'B', 'T'];
+            const weights = [0.45, 0.45, 0.1];
+            
+            for (let i = 0; i < 10; i++) {
+                const rand = Math.random();
+                let cum = 0;
+                for (let j = 0; j < outcomes.length; j++) {
+                    cum += weights[j];
+                    if (rand < cum) {
+                        addResult(outcomes[j]);
+                        break;
+                    }
+                }
+            }
+            logAction('🎲 Simulated 10 random outcomes');
+        }
+
+        function syncWithPlugin() {
+            // Simulate fetching from Minecraft plugin
+            // In real implementation, this would fetch from your plugin's API/websocket
+            logAction('📡 Syncing with Minecraft plugin...');
+            
+            // Mock data for demonstration
+            setTimeout(() => {
+                logAction('✅ Sync complete. 24 new results imported.');
+            }, 1000);
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('chickenHistory', JSON.stringify(history));
+            localStorage.setItem('chickenNet', JSON.stringify(neuralNet));
+            localStorage.setItem('chickenBalance', balance);
+            localStorage.setItem('chickenSessionProfit', sessionProfit);
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('chickenHistory');
+            if (saved) {
+                history = JSON.parse(saved);
+                renderBeadRoad();
+                updateStats();
+                generatePrediction();
+            }
+            const savedBalance = localStorage.getItem('chickenBalance');
+            if (savedBalance) {
+                balance = parseFloat(savedBalance);
+                sessionProfit = parseFloat(localStorage.getItem('chickenSessionProfit') || 0);
+                updateBankroll();
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') addResult('R');
+            if (e.key === 'b' || e.key === 'B') addResult('B');
+            if (e.key === 't' || e.key === 'T') addResult('T');
+            if (e.key === 'z' && e.ctrlKey) undoLast();
+        });
+    </script>
+</body>
+</html>
