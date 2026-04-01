@@ -156,6 +156,7 @@
             width: 100%;
         }
     </style>
+<base target="_blank">
 </head>
 <body class="text-gray-100 min-h-screen p-4 md:p-6">
 
@@ -172,11 +173,15 @@
                 <p class="text-sm text-gray-500 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-green-500 live-indicator"></span>
                     Neural Network Prediction Engine v2.0
-                </p>
+                
+                    <p class="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        Currently using: <span id="activeUsers" class="text-purple-400 font-bold mono">1</span> Users
+                    </p>
+                </div>
             </div>
-        </div>
-        
-        <div class="flex gap-3">
+            
+            <div class="flex gap-3">
             <button onclick="syncWithPlugin()" class="glass-panel px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/5 transition flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 Sync Plugin
@@ -932,6 +937,78 @@
                 saveToStorage();
             }
         }
+
+        // Visitor Counter System - Track active users
+        (function() {
+            const STORAGE_KEY = 'chickenFightVisitors';
+            const SESSION_KEY = 'chickenFightSessionId';
+            const HEARTBEAT_INTERVAL = 5000; // 5 seconds
+
+            // Generate unique session ID
+            let sessionId = sessionStorage.getItem(SESSION_KEY);
+            if (!sessionId) {
+                sessionId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                sessionStorage.setItem(SESSION_KEY, sessionId);
+            }
+
+            // Register this user
+            function registerUser() {
+                const now = Date.now();
+                let visitors = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+                // Remove inactive users (no heartbeat for 15 seconds)
+                Object.keys(visitors).forEach(id => {
+                    if (now - visitors[id] > 15000) {
+                        delete visitors[id];
+                    }
+                });
+
+                // Register/update this user
+                visitors[sessionId] = now;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(visitors));
+
+                // Update display
+                const count = Object.keys(visitors).length;
+                const display = document.getElementById('activeUsers');
+                if (display) {
+                    display.textContent = count;
+                    // Add animation effect
+                    display.style.transform = 'scale(1.2)';
+                    display.style.color = count > 5 ? '#22c55e' : count > 2 ? '#eab308' : '#a855f7';
+                    setTimeout(() => {
+                        display.style.transform = 'scale(1)';
+                    }, 200);
+                }
+
+                return count;
+            }
+
+            // Initial registration
+            registerUser();
+
+            // Heartbeat to keep user active
+            setInterval(registerUser, HEARTBEAT_INTERVAL);
+
+            // Cleanup on page unload
+            window.addEventListener('beforeunload', function() {
+                let visitors = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+                delete visitors[sessionId];
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(visitors));
+            });
+
+            // Listen for changes from other tabs
+            window.addEventListener('storage', function(e) {
+                if (e.key === STORAGE_KEY) {
+                    const visitors = JSON.parse(e.newValue || '{}');
+                    const count = Object.keys(visitors).length;
+                    const display = document.getElementById('activeUsers');
+                    if (display) {
+                        display.textContent = count;
+                    }
+                }
+            });
+        })();
+
 
         function simulateBatch() {
             const outcomes = ['R', 'B', 'T'];
