@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AtlasPet Config Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: '#54F4AD',
+                        secondary: '#FFB6C1',
+                        accent: '#FFD700',
+                        dark: '#0f172a',
+                        darker: '#020617',
+                        surface: '#1e293b',
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px #54F4AD, 0 0 10px #54F4AD' },
+                            '100%': { boxShadow: '0 0 20px #54F4AD, 0 0 30px #54F4AD' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(84, 244, 173, 0.1);
+        }
+        .glass-panel:hover {
+            border-color: rgba(84, 244, 173, 0.3);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #54F4AD;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #3dd193;
+        }
+        .code-preview {
+            background: #0d1117;
+            border: 1px solid #30363d;
+        }
+        .input-field {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(84, 244, 173, 0.2);
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: #54F4AD;
+            box-shadow: 0 0 0 3px rgba(84, 244, 173, 0.1);
+            outline: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #54F4AD 0%, #3dd193 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(84, 244, 173, 0.4);
+        }
+        .btn-secondary {
+            background: rgba(84, 244, 173, 0.1);
+            border: 1px solid rgba(84, 244, 173, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(84, 244, 173, 0.2);
+            transform: translateY(-1px);
+        }
+        .tag {
+            background: rgba(84, 244, 173, 0.15);
+            border: 1px solid rgba(84, 244, 173, 0.3);
+        }
+        .tag:hover {
+            background: rgba(84, 244, 173, 0.25);
+            cursor: pointer;
+        }
+        .tag.active {
+            background: #54F4AD;
+            color: #0f172a;
+            border-color: #54F4AD;
+        }
+        .pet-card {
+            transition: all 0.3s ease;
+        }
+        .pet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.5);
+        }
+        .syntax-key { color: #ff7b72; }
+        .syntax-string { color: #a5d6ff; }
+        .syntax-number { color: #79c0ff; }
+        .syntax-comment { color: #8b949e; }
+        .syntax-punctuation { color: #c9d1d9; }
+    </style>
+</head>
+<body class="text-gray-100 font-sans custom-scrollbar">
+
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-50 glass-panel border-b border-primary/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center animate-glow">
+                    <i class="fas fa-dragon text-darker text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                        AtlasPet
+                    </h1>
+                    <p class="text-xs text-gray-400">Configuration Generator</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="resetAll()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-primary">
+                    <i class="fas fa-trash-alt mr-2"></i>Reset All
+                </button>
+                <button onclick="exportConfig()" class="btn-primary px-6 py-2 rounded-lg text-sm font-bold text-darker shadow-lg">
+                    <i class="fas fa-download mr-2"></i>Export Config
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-panel rounded-xl p-6 border-l-4 border-primary">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Pets</p>
+                        <p class="text-3xl font-bold text-white" id="totalPets">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                        <i class="fas fa-paw text-primary text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-panel rounded-xl p-6 border-l-4 border-secondary">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Enabled Pets</p>
+                        <p class="text-3xl font-bold text-white" id="enabledPets">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-secondary text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-panel rounded-xl p-6 border-l-4 border-accent">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Config Status</p>
+                        <p class="text-sm font-medium text-accent mt-1">Ready to Export</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                        <i class="fas fa-file-code text-accent text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Left Column: Pet Editor -->
+            <div class="space-y-6">
+                
+                <!-- Pet Selection -->
+                <div class="glass-panel rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-list text-primary"></i>
+                            Pet List
+                        </h2>
+                        <button onclick="addNewPet()" class="btn-primary px-4 py-2 rounded-lg text-sm font-bold text-darker">
+                            <i class="fas fa-plus mr-2"></i>Add Pet
+                        </button>
+                    </div>
+                    
+                    <div id="petList" class="space-y-3 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                        <!-- Pet items will be inserted here -->
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-ghost text-4xl mb-2 opacity-50"></i>
+                            <p>No pets created yet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pet Editor Form -->
+                <div id="petEditor" class="glass-panel rounded-xl p-6 hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-edit text-secondary"></i>
+                            Edit Pet
+                        </h2>
+                        <button onclick="deleteCurrentPet()" class="text-red-400 hover:text-red-300 transition-colors">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <!-- Basic Info -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Pet ID (Key)</label>
+                                <input type="text" id="petId" class="input-field w-full px-4 py-2 rounded-lg text-white placeholder-gray-500" placeholder="e.g., dragon">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Display Name</label>
+                                <input type="text" id="displayName" class="input-field w-full px-4 py-2 rounded-lg text-white placeholder-gray-500" placeholder="&#FF0000&lDragon">
+                            </div>
+                        </div>
+
+                        <!-- Animation & Scale -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Animation</label>
+                                <select id="animation" class="input-field w-full px-4 py-2 rounded-lg text-white">
+                                    <option value="GLIDE">GLIDE (Default)</option>
+                                    <option value="BOUNCE">BOUNCE</option>
+                                    <option value="WALK">WALK</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Scale</label>
+                                <input type="number" id="scale" step="0.1" min="0.1" max="5" value="1.2" class="input-field w-full px-4 py-2 rounded-lg text-white">
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Description Lines</label>
+                            <div id="descriptionList" class="space-y-2">
+                                <div class="flex gap-2">
+                                    <input type="text" class="desc-line input-field flex-1 px-4 py-2 rounded-lg text-white text-sm" placeholder="&fᴇꜰꜰᴇᴄᴛ:">
+                                    <button onclick="removeDescriptionLine(this)" class="text-red-400 hover:text-red-300 px-2">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button onclick="addDescriptionLine()" class="mt-2 text-sm text-primary hover:text-primary/80 font-medium">
+                                <i class="fas fa-plus-circle mr-1"></i>Add Line
+                            </button>
+                        </div>
+
+                        <!-- Skins -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Skins</label>
+                            <div id="skinsList" class="space-y-2">
+                                <div class="flex gap-2">
+                                    <select class="skin-type input-field px-3 py-2 rounded-lg text-sm text-white w-32">
+                                        <option value="HDB">HeadDatabase</option>
+                                        <option value="MOB">Mob Entity</option>
+                                    </select>
+                                    <input type="text" class="skin-value input-field flex-1 px-4 py-2 rounded-lg text-white text-sm" placeholder="79749 or ZOMBIE">
+                                    <button onclick="removeSkinLine(this)" class="text-red-400 hover:text-red-300 px-2">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button onclick="addSkinLine()" class="mt-2 text-sm text-primary hover:text-primary/80 font-medium">
+                                <i class="fas fa-plus-circle mr-1"></i>Add Skin
+                            </button>
+                            <p class="text-xs text-gray-500 mt-1">HDB:ID for heads, MOB:TYPE or MOB:TYPE:BABY for mobs</p>
+                        </div>
+
+                        <!-- Abilities -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-3">Abilities</label>
+                            
+                            <!-- Potion Effects -->
+                            <div class="mb-4">
+                                <p class="text-xs text-gray-400 mb-2 uppercase tracking-wider">Potion Effects</p>
+                                <div class="flex flex-wrap gap-2 mb-2" id="potionTags">
+                                    <!-- Potion tags inserted here -->
+                                </div>
+                                <div class="flex gap-2 mt-2">
+                                    <select id="potionSelect" class="input-field px-3 py-2 rounded-lg text-sm text-white flex-1">
+                                        <option value="">Select Effect...</option>
+                                    </select>
+                                    <select id="amplifierSelect" class="input-field px-3 py-2 rounded-lg text-sm text-white w-24">
+                                        <option value="0">I (0)</option>
+                                        <option value="1">II (1)</option>
+                                        <option value="2">III (2)</option>
+                                        <option value="3">IV (3)</option>
+                                        <option value="4">V (4)</option>
+                                    </select>
+                                    <button onclick="addPotionAbility()" class="btn-secondary px-3 py-2 rounded-lg text-primary">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Special Abilities -->
+                            <div>
+                                <p class="text-xs text-gray-400 mb-2 uppercase tracking-wider">Special Abilities</p>
+                                <div class="flex flex-wrap gap-2" id="specialAbilities">
+                                    <label class="inline-flex items-center gap-2 tag px-3 py-2 rounded-lg cursor-pointer select-none">
+                                        <input type="checkbox" value="NO_FALL_DAMAGE" class="hidden ability-check" onchange="toggleAbility(this)">
+                                        <i class="fas fa-parachute-box"></i>
+                                        <span class="text-sm">No Fall Damage</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 tag px-3 py-2 rounded-lg cursor-pointer select-none">
+                                        <input type="checkbox" value="NO_MOB" class="hidden ability-check" onchange="toggleAbility(this)">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span class="text-sm">No Mob Target</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 tag px-3 py-2 rounded-lg cursor-pointer select-none">
+                                        <input type="checkbox" value="FLY" class="hidden ability-check" onchange="toggleAbility(this)">
+                                        <i class="fas fa-feather-alt"></i>
+                                        <span class="text-sm">Flight</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enabled Toggle -->
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-700">
+                            <span class="text-sm font-medium text-gray-300">Enable in config.yml</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="enabledToggle" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+
+                        <button onclick="savePet()" class="w-full btn-primary py-3 rounded-lg text-darker font-bold shadow-lg mt-4">
+                            <i class="fas fa-save mr-2"></i>Save Pet
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="glass-panel rounded-xl p-12 text-center">
+                    <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center animate-float">
+                        <i class="fas fa-dragon text-4xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Create Your First Pet</h3>
+                    <p class="text-gray-400 mb-6">Start by adding a new pet configuration</p>
+                    <button onclick="addNewPet()" class="btn-primary px-8 py-3 rounded-lg text-darker font-bold">
+                        <i class="fas fa-plus mr-2"></i>Create Pet
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Preview -->
+            <div class="space-y-6">
+                
+                <!-- YAML Preview -->
+                <div class="glass-panel rounded-xl p-6 sticky top-24">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-code text-accent"></i>
+                            Live Preview
+                        </h2>
+                        <div class="flex gap-2">
+                            <button onclick="copyToClipboard()" class="btn-secondary px-3 py-1.5 rounded text-xs font-medium text-primary">
+                                <i class="fas fa-copy mr-1"></i>Copy
+                            </button>
+                            <button onclick="downloadConfig()" class="btn-secondary px-3 py-1.5 rounded text-xs font-medium text-primary">
+                                <i class="fas fa-download mr-1"></i>Download
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="switchPreview('pets')" id="tabPets" class="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-darker transition-all">pets.yml</button>
+                        <button onclick="switchPreview('config')" id="tabConfig" class="flex-1 py-2 rounded-lg text-sm font-medium bg-surface text-gray-400 hover:text-white transition-all">config.yml</button>
+                    </div>
+
+                    <div class="code-preview rounded-lg p-4 font-mono text-sm overflow-x-auto max-h-[600px] custom-scrollbar relative">
+                        <pre id="yamlPreview" class="whitespace-pre-wrap break-all"></pre>
+                    </div>
+
+                    <div class="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20">
+                        <h4 class="text-primary font-semibold mb-2 flex items-center gap-2">
+                            <i class="fas fa-info-circle"></i>
+                            Quick Tips
+                        </h4>
+                        <ul class="text-sm text-gray-300 space-y-1 list-disc list-inside">
+                            <li>Use color codes with <code class="bg-surface px-1 rounded">&</code> or <code class="bg-surface px-1 rounded">&#</code> for hex</li>
+                            <li>Multiple skins rotate automatically</li>
+                            <li>Amplifier 0 = Level I, 1 = Level II</li>
+                            <li>Enabled pets appear in config.yml automatically</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <div class="glass-panel rounded-lg px-6 py-4 border-l-4 border-primary flex items-center gap-3 shadow-2xl">
+            <i class="fas fa-check-circle text-primary text-xl"></i>
+            <span id="toastMessage" class="font-medium text-white">Operation successful</span>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        let pets = [];
+        let currentPetIndex = -1;
+        let currentPreview = 'pets';
+
+        // Minecraft Potion Effects (Bukkit API)
+        const potionEffects = [
+            'SPEED', 'SLOW', 'FAST_DIGGING', 'SLOW_DIGGING', 'INCREASE_DAMAGE', 
+            'HEAL', 'HARM', 'JUMP', 'CONFUSION', 'REGENERATION', 
+            'DAMAGE_RESISTANCE', 'FIRE_RESISTANCE', 'WATER_BREATHING', 
+            'INVISIBILITY', 'BLINDNESS', 'NIGHT_VISION', 'HUNGER', 'WEAKNESS', 
+            'POISON', 'WITHER', 'HEALTH_BOOST', 'ABSORPTION', 'SATURATION',
+            'GLOWING', 'LEVITATION', 'LUCK', 'UNLUCK', 'SLOW_FALLING',
+            'CONDUIT_POWER', 'DOLPHINS_GRACE', 'BAD_OMEN', 'HERO_OF_THE_VILLAGE',
+            'DARKNESS', 'TRIAL_OMEN', 'RAID_OMEN', 'INFESTED', 'OOZING',
+            'WEAVING', 'WIND_CHARGED'
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            populatePotionSelect();
+            updatePreview();
+            updateStats();
+        });
+
+        function populatePotionSelect() {
+            const select = document.getElementById('potionSelect');
+            potionEffects.forEach(effect => {
+                const option = document.createElement('option');
+                option.value = effect;
+                option.textContent = effect.replace(/_/g, ' ');
+                select.appendChild(option);
+            });
+        }
+
+        function addNewPet() {
+            const newPet = {
+                id: 'newpet' + (pets.length + 1),
+                displayname: '&#FFFFFF&lNew Pet',
+                animation: 'GLIDE',
+                scale: 1.2,
+                description: ['&fᴇꜰꜰᴇᴄᴛ:', '  &#54F4AD⏵ &7SPEED I'],
+                skins: [{ type: 'HDB', value: '79749' }],
+                abilities: [],
+                enabled: true
+            };
+            pets.push(newPet);
+            currentPetIndex = pets.length - 1;
+            renderPetList();
+            loadPetIntoEditor(currentPetIndex);
+            updateStats();
+            showToast('New pet created');
+        }
+
+        function renderPetList() {
+            const container = document.getElementById('petList');
+            if (pets.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-ghost text-4xl mb-2 opacity-50"></i>
+                        <p>No pets created yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = pets.map((pet, index) => `
+                <div onclick="loadPetIntoEditor(${index})" 
+                     class="pet-card p-4 rounded-lg cursor-pointer border ${index === currentPetIndex ? 'border-primary bg-primary/10' : 'border-gray-700 bg-surface/50 hover:bg-surface'}">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                                <i class="fas fa-paw text-primary"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-white">${escapeHtml(pet.id)}</h4>
+                                <p class="text-xs text-gray-400">${pet.abilities.length} abilities • ${pet.skins.length} skins</p>
+                            </div>
+                        </div>
+                        ${pet.enabled ? '<span class="text-primary text-xs"><i class="fas fa-check"></i></span>' : '<span class="text-gray-600 text-xs"><i class="fas fa-times"></i></span>'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadPetIntoEditor(index) {
+            currentPetIndex = index;
+            const pet = pets[index];
+            
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('petEditor').classList.remove('hidden');
+            
+            // Fill basic info
+            document.getElementById('petId').value = pet.id;
+            document.getElementById('displayName').value = pet.displayname;
+            document.getElementById('animation').value = pet.animation;
+            document.getElementById('scale').value = pet.scale;
+            document.getElementById('enabledToggle').checked = pet.enabled;
+
+            // Fill description
+            const descContainer = document.getElementById('descriptionList');
+            descContainer.innerHTML = pet.description.map(line => `
+                <div class="flex gap-2">
+                    <input type="text" class="desc-line input-field flex-1 px-4 py-2 rounded-lg text-white text-sm" value="${escapeHtml(line)}">
+                    <button onclick="removeDescriptionLine(this)" class="text-red-400 hover:text-red-300 px-2">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            // Fill skins
+            const skinsContainer = document.getElementById('skinsList');
+            skinsContainer.innerHTML = pet.skins.map(skin => `
+                <div class="flex gap-2">
+                    <select class="skin-type input-field px-3 py-2 rounded-lg text-sm text-white w-32">
+                        <option value="HDB" ${skin.type === 'HDB' ? 'selected' : ''}>HeadDatabase</option>
+                        <option value="MOB" ${skin.type === 'MOB' ? 'selected' : ''}>Mob Entity</option>
+                    </select>
+                    <input type="text" class="skin-value input-field flex-1 px-4 py-2 rounded-lg text-white text-sm" value="${escapeHtml(skin.value)}">
+                    <button onclick="removeSkinLine(this)" class="text-red-400 hover:text-red-300 px-2">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            // Fill abilities
+            renderAbilities(pet.abilities);
+            
+            renderPetList();
+            updatePreview();
+        }
+
+        function renderAbilities(abilities) {
+            // Reset special abilities
+            document.querySelectorAll('.ability-check').forEach(cb => {
+                cb.checked = abilities.includes(cb.value);
+                cb.parentElement.classList.toggle('active', cb.checked);
+            });
+
+            // Render potion tags
+            const potionTags = abilities.filter(a => a.startsWith('POTION:'));
+            const container = document.getElementById('potionTags');
+            container.innerHTML = potionTags.map(potion => {
+                const parts = potion.split(':');
+                const name = parts[1];
+                const amp = parseInt(parts[2]) + 1;
+                return `
+                    <span class="tag px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                        ${name} ${amp}
+                        <button onclick="removePotionAbility('${potion}')" class="hover:text-red-400">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </span>
+                `;
+            }).join('');
+        }
+
+        function addDescriptionLine() {
+            const container = document.getElementById('descriptionList');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.innerHTML = `
+                <input type="text" class="desc-line input-field flex-1 px-4 py-2 rounded-lg text-white text-sm" placeholder="&fDescription line...">
+                <button onclick="removeDescriptionLine(this)" class="text-red-400 hover:text-red-300 px-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeDescriptionLine(btn) {
+            btn.parentElement.remove();
+        }
+
+        function addSkinLine() {
+            const container = document.getElementById('skinsList');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.innerHTML = `
+                <select class="skin-type input-field px-3 py-2 rounded-lg text-sm text-white w-32">
+                    <option value="HDB">HeadDatabase</option>
+                    <option value="MOB">Mob Entity</option>
+                </select>
+                <input type="text" class="skin-value input-field flex-1 px-4 py-2 rounded-lg text-white text-sm" placeholder="79749 or ZOMBIE">
+                <button onclick="removeSkinLine(this)" class="text-red-400 hover:text-red-300 px-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeSkinLine(btn) {
+            btn.parentElement.remove();
+        }
+
+        function addPotionAbility() {
+            const select = document.getElementById('potionSelect');
+            const amp = document.getElementById('amplifierSelect');
+            if (!select.value) return;
+            
+            const ability = `POTION:${select.value}:${amp.value}`;
+            if (currentPetIndex >= 0) {
+                if (!pets[currentPetIndex].abilities.includes(ability)) {
+                    pets[currentPetIndex].abilities.push(ability);
+                    renderAbilities(pets[currentPetIndex].abilities);
+                    updatePreview();
+                }
+            }
+            select.value = '';
+        }
+
+        function removePotionAbility(ability) {
+            if (currentPetIndex >= 0) {
+                pets[currentPetIndex].abilities = pets[currentPetIndex].abilities.filter(a => a !== ability);
+                renderAbilities(pets[currentPetIndex].abilities);
+                updatePreview();
+            }
+        }
+
+        function toggleAbility(checkbox) {
+            const ability = checkbox.value;
+            checkbox.parentElement.classList.toggle('active', checkbox.checked);
+            
+            if (currentPetIndex >= 0) {
+                if (checkbox.checked) {
+                    if (!pets[currentPetIndex].abilities.includes(ability)) {
+                        pets[currentPetIndex].abilities.push(ability);
+                    }
+                } else {
+                    pets[currentPetIndex].abilities = pets[currentPetIndex].abilities.filter(a => a !== ability);
+                }
+                updatePreview();
+            }
+        }
+
+        function savePet() {
+            if (currentPetIndex < 0) return;
+            
+            const pet = pets[currentPetIndex];
+            pet.id = document.getElementById('petId').value || pet.id;
+            pet.displayname = document.getElementById('displayName').value;
+            pet.animation = document.getElementById('animation').value;
+            pet.scale = parseFloat(document.getElementById('scale').value) || 1.2;
+            pet.enabled = document.getElementById('enabledToggle').checked;
+            
+            // Collect descriptions
+            pet.description = Array.from(document.querySelectorAll('.desc-line'))
+                .map(input => input.value)
+                .filter(v => v);
+            
+            // Collect skins
+            pet.skins = Array.from(document.getElementById('skinsList').children).map(row => ({
+                type: row.querySelector('.skin-type').value,
+                value: row.querySelector('.skin-value').value
+            })).filter(s => s.value);
+            
+            renderPetList();
+            updatePreview();
+            updateStats();
+            showToast('Pet saved successfully');
+        }
+
+        function deleteCurrentPet() {
+            if (currentPetIndex < 0) return;
+            if (!confirm('Delete this pet?')) return;
+            
+            pets.splice(currentPetIndex, 1);
+            currentPetIndex = -1;
+            document.getElementById('petEditor').classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+            renderPetList();
+            updatePreview();
+            updateStats();
+            showToast('Pet deleted');
+        }
+
+        function switchPreview(type) {
+            currentPreview = type;
+            document.getElementById('tabPets').className = type === 'pets' ? 
+                'flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-darker transition-all' : 
+                'flex-1 py-2 rounded-lg text-sm font-medium bg-surface text-gray-400 hover:text-white transition-all';
+            document.getElementById('tabConfig').className = type === 'config' ? 
+                'flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-darker transition-all' : 
+                'flex-1 py-2 rounded-lg text-sm font-medium bg-surface text-gray-400 hover:text-white transition-all';
+            updatePreview();
+        }
+
+        function generatePetsYaml() {
+            let yaml = '# ==========================================\\n';
+            yaml += '# AtlasPet - Pets Configuration\\n';
+            yaml += '# ==========================================\\n\\n';
+            yaml += '# The name shown on the hologram above the pet\\n';
+            yaml += '# Animation types: GLIDE (default), BOUNCE, or WALK\\n';
+            yaml += '# Visual size of the pet (requires Minecraft 1.20.5+)\\n';
+            yaml += '# Text shown in menus (not used by the entity itself)\\n';
+            yaml += '# List of skins. If more than 1, they will rotate based on \'skin-rotation-interval\'\\n';
+            yaml += '# Format: "HDB:<ID>" for HeadDatabase or "MOB:<TYPE>:[BABY]" for entities\\n';
+            yaml += '# Abilities applied to the player while the pet is active\\n';
+            yaml += '# Formats:\\n';
+            yaml += '# - POTION:TYPE:AMPLIFIER (0 = Level 1)\\n';
+            yaml += '# - NO_FALL_DAMAGE\\n';
+            yaml += '# - NO_MOB\\n';
+            yaml += '# - FLY\\n\\n';
+
+            pets.forEach(pet => {
+                yaml += `${pet.id}:\\n`;
+                yaml += `  displayname: "${escapeYaml(pet.displayname)}"\\n`;
+                yaml += `  animation: ${pet.animation}\\n`;
+                yaml += `  scale: ${pet.scale}\\n`;
+                yaml += `  description:\\n`;
+                pet.description.forEach(line => {
+                    yaml += `    - "${escapeYaml(line)}"\\n`;
+                });
+                yaml += `  skins:\\n`;
+                pet.skins.forEach(skin => {
+                    yaml += `    - "${skin.type}:${escapeYaml(skin.value)}"\\n`;
+                });
+                yaml += `  abilities:\\n`;
+                if (pet.abilities.length === 0) {
+                    yaml += `    []\\n`;
+                } else {
+                    pet.abilities.forEach(ability => {
+                        yaml += `    - "${escapeYaml(ability)}"\\n`;
+                    });
+                }
+                yaml += '\\n';
+            });
+
+            return yaml;
+        }
+
+        function generateConfigYaml() {
+            let yaml = '# ==========================================\\n';
+            yaml += '# AtlasPet - Main Configuration\\n';
+            yaml += '# ==========================================\\n\\n';
+            yaml += 'enable-pet:\\n';
+            
+            const enabledPets = pets.filter(p => p.enabled);
+            if (enabledPets.length === 0) {
+                yaml += '  []\\n';
+            } else {
+                enabledPets.forEach(pet => {
+                    yaml += `  - ${pet.id}\\n`;
+                });
+            }
+            
+            return yaml;
+        }
+
+        function updatePreview() {
+            const preview = document.getElementById('yamlPreview');
+            const content = currentPreview === 'pets' ? generatePetsYaml() : generateConfigYaml();
+            
+            // Simple syntax highlighting
+            const highlighted = content
+                .replace(/([a-z_]+):/g, '<span class="syntax-key">$1</span>:')
+                .replace(/: "([^"]*)"/g, ': <span class="syntax-string">"$1"</span>')
+                .replace(/: ([0-9.]+)/g, ': <span class="syntax-number">$1</span>')
+                .replace(/#(.*)/g, '<span class="syntax-comment">#$1</span>')
+                .replace(/- /g, '<span class="syntax-punctuation">- </span>');
+            
+            preview.innerHTML = highlighted;
+        }
+
+        function updateStats() {
+            document.getElementById('totalPets').textContent = pets.length;
+            document.getElementById('enabledPets').textContent = pets.filter(p => p.enabled).length;
+        }
+
+        function exportConfig() {
+            savePet();
+            downloadConfig();
+            showToast('Configuration exported');
+        }
+
+        function downloadConfig() {
+            const petsYaml = generatePetsYaml();
+            const configYaml = generateConfigYaml();
+            
+            downloadFile('pets.yml', petsYaml);
+            setTimeout(() => downloadFile('config.yml', configYaml), 100);
+        }
+
+        function downloadFile(filename, content) {
+            const blob = new Blob([content.replace(/\\n/g, '\n')], { type: 'text/yaml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function copyToClipboard() {
+            const content = currentPreview === 'pets' ? generatePetsYaml() : generateConfigYaml();
+            navigator.clipboard.writeText(content.replace(/\\n/g, '\n')).then(() => {
+                showToast('Copied to clipboard');
+            });
+        }
+
+        function resetAll() {
+            if (!confirm('Clear all pets? This cannot be undone.')) return;
+            pets = [];
+            currentPetIndex = -1;
+            document.getElementById('petEditor').classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+            renderPetList();
+            updatePreview();
+            updateStats();
+            showToast('All data cleared');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeYaml(text) {
+            return text.replace(/"/g, '\\"');
+        }
+    </script>
+</body>
+</html>
