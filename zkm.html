@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZKM Class Name Generator - Advanced Security</title>
+    <style>
+        :root {
+            --main-purple: #b8a9c9;
+            --light-purple: #d4c4e0;
+            --dark-purple: #9a89b0;
+            --bg-purple: #f5f0f7;
+            --text-dark: #4a4458;
+            --text-light: #6b5b7a;
+            --border: #d9d0e0;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-purple);
+            min-height: 100vh;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h1 {
+            color: var(--dark-purple);
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .panel {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(154, 137, 176, 0.08);
+        }
+
+        .panel-title {
+            color: var(--dark-purple);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--white);
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--main-purple);
+            box-shadow: 0 0 0 3px rgba(184, 169, 201, 0.15);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: var(--bg-purple);
+            border-radius: 6px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--dark-purple);
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        .security-badge {
+            display: inline-block;
+            background: var(--light-purple);
+            color: var(--dark-purple);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
+        .warning-badge {
+            background: #ffe4e1;
+            color: #c44;
+        }
+
+        .btn {
+            background: var(--dark-purple);
+            color: var(--white);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: var(--main-purple);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--dark-purple);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-purple);
+        }
+
+        .btn-danger {
+            background: #c9a9a9;
+            color: #5a3a3a;
+        }
+
+        .btn-danger:hover {
+            background: #d4b4b4;
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            color: var(--dark-purple);
+            font-weight: 300;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .preview-box {
+            background: var(--bg-purple);
+            border-left: 3px solid var(--main-purple);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 6px 6px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            color: var(--text-dark);
+        }
+
+        textarea#output {
+            min-height: 300px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            background: var(--bg-purple);
+        }
+
+        .char-preview {
+            background: var(--bg-purple);
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            word-break: break-all;
+            line-height: 1.8;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 25px 0;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .feature-item::before {
+            content: '•';
+            color: var(--main-purple);
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ZKM Class Name Generator</h1>
+            <p class="subtitle">Advanced Anti-Deobfuscation & Anti-Analysis Protection</p>
+        </header>
+
+        <div class="panel">
+            <div class="panel-title">Basic Configuration</div>
+            
+            <div class="grid-3">
+                <div class="input-group">
+                    <label>Number of Classes</label>
+                    <input type="number" id="lineCount" value="2000" min="100" max="50000">
+                </div>
+                
+                <div class="input-group">
+                    <label>Name Length (chars)</label>
+                    <input type="number" id="nameLength" value="512" min="50" max="1000">
+                </div>
+                
+                <div class="input-group">
+                    <label>Character Set (12 Languages)</label>
+                    <select id="charSet">
+                        <optgroup label="East Asian">
+                            <option value="japanese">Japanese Hiragana</option>
+                            <option value="katakana">Japanese Katakana</option>
+                            <option value="chinese">Chinese Hanzi</option>
+                            <option value="korean">Korean Hangul</option>
+                            <option value="khmer">Khmer (Cambodia)</option>
+                            <option value="thai">Thai</option>
+                            <option value="lao">Lao</option>
+                            <option value="myanmar">Myanmar (Burmese)</option>
+                        </optgroup>
+                        <optgroup label="Historical & Ancient">
+                            <option value="egyptian">Egyptian Hieroglyphs</option>
+                            <option value="cuneiform">Cuneiform (Year ~3000 BCE)</option>
+                            <option value="linearb">Linear B (Mycenaean)</option>
+                            <option value="ogham">Ogham (Ancient Irish)</option>
+                            <option value="runic">Runic (Elder Futhark)</option>
+                            <option value="phoenician">Phoenician (Year ~1000 BCE)</option>
+                        </optgroup>
+                        <optgroup label="Technical">
+                            <option value="mixed">Mixed Asian (All 8)</option>
+                            <option value="ancient">All Ancient Scripts</option>
+                            <option value="math">Mathematical</option>
+                            <option value="emoji">Emoji Chaos</option>
+                            <option value="invisible">Zero-Width Controls</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>Prefix (optional)</label>
+                    <input type="text" id="prefix" placeholder="e.g., _">
+                </div>
+                <div class="input-group">
+                    <label>Suffix (optional)</label>
+                    <input type="text" id="suffix" placeholder="e.g., $">
+                </div>
+            </div>
+
+            <div class="char-preview" id="charPreview">
+                Character set preview will appear here...
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">
+                Security Features
+                <span class="security-badge">Anti-Analysis</span>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="randomize" checked>
+                        <label>Randomize character distribution</label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="insertFake" checked>
+                        <label>Insert zero-width control characters</label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="confuseLength" checked>
+                        <label>Variable name lengths (confuses pattern matching)</label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="bidirectional">
+                        <label>Inject bidirectional override characters (RLO/LRO)</label>
+                        <span class="security-badge warning-badge">Risky</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="crashRecaf" checked>
+                        <label>Insert Recaf-crashing sequences</label>
+                        <span class="security-badge">Recaf</span>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="crashJDGUI">
+                        <label>Insert JD-GUI crashing sequences</label>
+                        <span class="security-badge">JD-GUI</span>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="crashCFR">
+                        <label>Insert CFR decompiler crashes</label>
+                        <span class="security-badge">CFR</span>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="crashFernFlower">
+                        <label>Insert FernFlower/IntelliJ crashes</label>
+                        <span class="security-badge">IDEA</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="grid-2">
+                <div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="fakePackages">
+                        <label>Generate fake package structures</label>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="duplicateNames">
+                        <label>Allow duplicate class names (JVM collision)</label>
+                        <span class="security-badge warning-badge">Experimental</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="extremeMode">
+                        <label>EXTREME MODE (All protections)</label>
+                        <span class="security-badge warning-badge">Maximum</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-list">
+                <div class="feature-item">Khmer subscript confusion</div>
+                <div class="feature-item">Thai tone mark stacking</div>
+                <div class="feature-item">Myanmar visual reordering</div>
+                <div class="feature-item">Lao ligature breaking</div>
+                <div class="feature-item">Cuneiform number sandwiching</div>
+                <div class="feature-item">Hieroglyph direction overrides</div>
+                <div class="feature-item">Runic bind rune sequences</div>
+                <div class="feature-item">Phoenician RTL injection</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Output</div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="statLines">0</div>
+                    <div class="stat-label">Classes</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="statLength">0</div>
+                    <div class="stat-label">Avg Length</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="statUnique">0</div>
+                    <div class="stat-label">Unique Chars</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="statSize">0 KB</div>
+                    <div class="stat-label">Size</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="statSecurity">Low</div>
+                    <div class="stat-label">Security Level</div>
+                </div>
+            </div>
+
+            <div class="preview-box" id="preview">
+                Click Generate to create class names...
+            </div>
+
+            <textarea id="output" readonly placeholder="Generated output will appear here..."></textarea>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn" onclick="generate()">Generate</button>
+                <button class="btn btn-secondary" onclick="downloadFile()">Download classNames.txt</button>
+                <button class="btn btn-secondary" onclick="copyToClipboard()">Copy</button>
+                <button class="btn btn-danger" onclick="clearOutput()">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 12 Language support with old scripts
+        const charSets = {
+            // East Asian (8 languages)
+            japanese: {
+                chars: 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉゃゅょっゐゑゔゕゖ゛゜ゝゞ',
+                desc: 'Hiragana: 104 chars'
+            },
+            katakana: {
+                chars: 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポァィゥェォャュョッヰヱヴヵヶヽヾ',
+                desc: 'Katakana: 104 chars'
+            },
+            chinese: {
+                chars: '的一是不了在人有我他这个们中来上大为和国地到以说时要就出会可也你对生能而子那得于着下自之年过发后作里如进着等同行所然前外天政四日些平表间件无开手场实与相从当动面起看定天分还进小部其己头把道心发文变话已明力二义但关点正女去将真打五太总长世间次东月者他年',
+                desc: 'Common Hanzi: 100 chars'
+            },
+            korean: {
+                chars: 'ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣ가나다라마바사아자차카타파하거너더러머버서어저처커터퍼허고노도로모보소오조초코토포호구누두루무부수우주추쿠투푸후그느드르므브스으즈츠크트프흐기니디리미비시이지치키티피히',
+                desc: 'Hangul: 118 chars'
+            },
+            khmer: {
+                chars: 'កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវឝឞសហឡអឣឤឥឦឧឨឩឪឫឬឭឮឯឰឱឲឳ្ិះៈ៉៊់៌៍៎៏័៑្៓។៕៖ៗ៘៙៚៛ៜ៝០១២៣៤៥៦៧៨៩',
+                desc: 'Khmer with subscripts: 80+ chars'
+            },
+            thai: {
+                chars: 'กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮฯะัาำิีึืฺุู฿เแโใไๅๆ็่้๊๋์ํ๎๏๐๑๒๓๔๕๖๗๘๙๚๛',
+                desc: 'Thai with tone marks: 87 chars'
+            },
+            lao: {
+                chars: 'ກຂຄງຈຉຊຍດຕຖທນບປຜຝພຟມຢຣລວຫອຮຯະັາຳິີຶື຺ຸູົຼຽເແໂໃໄໆ່້໊໋໌ໍ໎໏໐໑໒໓໔໕໖໗໘໙໚໛',
+                desc: 'Lao: 67 chars'
+            },
+            myanmar: {
+                chars: 'ကခဂဃငစဆဇဈဉညဋဌဍဎဏတထဒဓနပဖဗဘမယရလဝသဟဠအဣဤဥဦဧဨဩဪါာိီုူေဲဳဴဵံ့း္်ျြွှဿ၀၁၂၃၄၅၆၇၈၉၊။၌၍၎၏ၐၑၒၓၔၕၖၗၘၙ',
+                desc: 'Burmese: 78 chars'
+            },
+            
+            // Ancient/Historical (Year 1 and older)
+            egyptian: {
+                chars: '𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇𓀈𓀉𓀊𓀋𓀌𓀍𓀎𓀏𓀐𓀑𓀒𓀓𓀔𓀕𓀖𓀗𓀘𓀙𓀚𓀛𓀜𓀝𓀞𓀟𓀠𓀡𓀢𓀣𓀤𓀥𓀦𓀧𓀨𓀩𓀪𓀫𓀬𓀭𓀮𓀯𓀰𓀱𓀲𓀳𓀴𓀵𓀶𓀷𓀸𓀹𓀺𓀻𓀼𓀽𓀾𓀿𓁀𓁁𓁂𓁃𓁄𓁅𓁆𓁇𓁈𓁉𓁊𓁋𓁌𓁍𓁎𓁏',
+                desc: 'Hieroglyphs (~3200 BCE): 80 chars'
+            },
+            cuneiform: {
+                chars: '𒀀𒀁𒀂𒀃𒀄𒀅𒀆𒀇𒀈𒀉𒀊𒀋𒀌𒀍𒀎𒀏𒀐𒀑𒀒𒀓𒀔𒀕𒀖𒀗𒀘𒀙𒀚𒀛𒀜𒀝𒀞𒀟𒀠𒀡𒀢𒀣𒀤𒀥𒀦𒀧𒀨𒀩𒀪𒀫𒀬𒀭𒀮𒀯𒀰𒀱𒀲𒀳𒀴𒀵𒀶𒀷𒀸𒀹𒀺𒀻𒀼𒀽𒀾𒀿𒁀𒁁𒁂𒁃𒁄𒁅𒁆𒁇𒁈𒁉𒁊𒁋𒁌𒁍𒁎𒁏',
+                desc: 'Sumerian (~3000 BCE): 80 chars'
+            },
+            linearb: {
+                chars: '𐀀𐀁𐀂𐀃𐀄𐀅𐀆𐀇𐀈𐀉𐀊𐀋𐀌𐀍𐀎𐀏𐀐𐀑𐀒𐀓𐀔𐀕𐀖𐀗𐀘𐀙𐀚𐀛𐀜𐀝𐀞𐀟𐀠𐀡𐀢𐀣𐀤𐀥𐀦𐀧𐀨𐀩𐀪𐀫𐀬𐀭𐀮𐀯𐀰𐀱𐀲𐀳𐀴𐀵𐀶𐀷𐀸𐀹𐀺𐀻𐀼𐀽𐀾𐀿𐁀𐁁𐁂𐁃𐁄𐁅𐁆𐁇𐁈𐁉𐁊𐁋𐁌𐁍𐁎𐁏',
+                desc: 'Mycenaean (~1450 BCE): 80 chars'
+            },
+            ogham: {
+                chars: ' ᚁᚂᚃᚄᚅᚆᚇᚈᚉᚊᚋᚌᚍᚎᚏᚐᚑᚒᚓᚔᚕᚖᚗᚘᚙᚚ᚛᚜᚝᚞᚟ᚠᚡᚢᚣᚤᚥᚦᚧᚨᚩᚪᚫᚬᚭᚮᚯᚰᚱᚲᚳᚴᚵᚶᚷᚸᚹᚺᚻᚼᚽᚾᚿᛀᛁᛂᛃᛄᛅᛆᛇᛈᛉᛊᛋᛌᛍᛎᛏᛐᛑᛒᛓᛔᛕᛖᛗᛘᛙᛚᛛᛜᛝᛞᛟᛠᛡᛢᛣᛤᛥᛦᛧᛨᛩᛪ᛫᛬᛭ᛮᛯᛰ',
+                desc: 'Old Irish (~400 CE): 93 chars'
+            },
+            runic: {
+                chars: 'ᚠᚡᚢᚣᚤᚥᚦᚧᚨᚩᚪᚫᚬᚭᚮᚯᚰᚱᚲᚳᚴᚵᚶᚷᚸᚹᚺᚻᚼᚽᚾᚿᛀᛁᛂᛃᛄᛅᛆᛇᛈᛉᛊᛋᛌᛍᛎᛏᛐᛑᛒᛓᛔᛕᛖᛗᛘᛙᛚᛛᛜᛝᛞᛟᛠᛡᛢᛣᛤᛥᛦᛧᛨᛩᛪ᛫᛬᛭ᛮᛯᛰ',
+                desc: 'Elder Futhark (~200 CE): 81 chars'
+            },
+            phoenician: {
+                chars: '𐤀𐤁𐤂𐤃𐤄𐤅𐤆𐤇𐤈𐤉𐤊𐤋𐤌𐤍𐤎𐤏𐤐𐤑𐤒𐤓𐤔𐤕𐤖𐤗𐤘𐤙𐤚𐤛',
+                desc: 'Phoenician (~1000 BCE): 28 chars'
+            },
+            
+            // Technical/Mixed
+            mixed: {
+                chars: '',
+                desc: 'All 8 Asian languages combined'
+            },
+            ancient: {
+                chars: '',
+                desc: 'All 6 ancient scripts combined'
+            },
+            math: {
+                chars: '𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡',
+                desc: 'Mathematical: 62 chars'
+            },
+            emoji: {
+                chars: '😀😁😂🤣😃😄😅😆😉😊😋😎😍😘🥰😗😙😚☺️🙂🤗🤩🤔🤨😐😑😶🙄😏😣😥😮🤐😯😪😫🥱😴😌😛😜😝🤤😒😓😔😕🙃🤑😲☹️🙁😖😞😟😤😢😭😦😧😨😩🤯😬😰😱🥵🥶😳🤪😵🥴😠😡🤬😷🤒🤕🤢🤮🤧😇🥳🥴🥺🤠🤡🥳🥸',
+                desc: 'Emoji: 80 chars'
+            },
+            invisible: {
+                chars: '\u200B\u200C\u200D\u2060\uFEFF\u180E\u200E\u200F\u202A\u202B\u202C\u202D\u202E\u206A\u206B\u206C\u206D\u206E\u206F\uFFF0\uFFF1\uFFF2\uFFF3\uFFF4\uFFF5\uFFF6\uFFF7\uFFF8\uFFF9\uFFFA\uFFFB\uFFFC\uFFFD',
+                desc: 'Zero-width and control chars: 32 chars'
+            }
+        };
+
+        // Build mixed sets
+        charSets.mixed.chars = charSets.japanese.chars + charSets.katakana.chars + 
+                              charSets.chinese.chars + charSets.korean.chars +
+                              charSets.khmer.chars + charSets.thai.chars + 
+                              charSets.lao.chars + charSets.myanmar.chars;
+        
+        charSets.ancient.chars = charSets.egyptian.chars + charSets.cuneiform.chars +
+                                charSets.linearb.chars + charSets.ogham.chars +
+                                charSets.runic.chars + charSets.phoenician.chars;
+
+        // Crash sequences for decompilers
+        const crashSequences = {
+            recaf: [
+                '\u0000\u0000\u0000', // Null bytes
+                '\uFEFF\uFEFF\uFEFF', // Multiple BOMs
+                '\uFFFE\uFFFE\uFFFE', // Reverse BOM
+                '\uFFFF\uFFFF\uFFFF', // Non-character
+            ],
+            jdgui: [
+                '//\u0000//\u0000', // Comment with null
+                '/*\u0000*/', // Block comment null
+                '\u0001\u0002\u0003', // Control chars
+            ],
+            cfr: [
+                '$$$.$$$.$$$', // Fake inner class
+                '[][][][][]', // Array confusion
+                '<><><><>', // Generic confusion
+            ],
+            fernflower: [
+                '\u2028\u2028\u2028', // Line separator
+                '\u2029\u2029\u2029', // Paragraph separator
+                '\u0085\u0085\u0085', // Next line
+            ]
+        };
+
+        // Anti-analysis patterns
+        const antiAnalysis = {
+            bidirectional: ['\u202E', '\u202D', '\u202A', '\u202B'], // RTL/LTR overrides
+            joiners: ['\u200D', '\u034F', '\u0600', '\u0601'], // Zero-width joiners
+            variation: ['\uFE00', '\uFE01', '\uFE02', '\uFE03'], // Variation selectors
+        };
+
+        function updateCharPreview() {
+            const set = charSets[document.getElementById('charSet').value];
+            document.getElementById('charPreview').textContent = 
+                `${set.desc} | Sample: ${set.chars.substring(0, 50)}... (${set.chars.length} total)`;
+        }
+
+        document.getElementById('charSet').addEventListener('change', updateCharPreview);
+        document.getElementById('extremeMode').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('randomize').checked = true;
+                document.getElementById('insertFake').checked = true;
+                document.getElementById('confuseLength').checked = true;
+                document.getElementById('bidirectional').checked = true;
+                document.getElementById('crashRecaf').checked = true;
+                document.getElementById('crashJDGUI').checked = true;
+                document.getElementById('crashCFR').checked = true;
+                document.getElementById('crashFernFlower').checked = true;
+            }
+        });
+
+        function generateRandomString(length, chars, options) {
+            let result = '';
+            const charArray = Array.from(chars);
+            
+            for (let i = 0; i < length; i++) {
+                // Insert crash sequences
+                if (options.crashRecaf && Math.random() < 0.02) {
+                    result += crashSequences.recaf[Math.floor(Math.random() * crashSequences.recaf.length)];
+                }
+                if (options.crashJDGUI && Math.random() < 0.02) {
+                    result += crashSequences.jdgui[Math.floor(Math.random() * crashSequences.jdgui.length)];
+                }
+                if (options.crashCFR && Math.random() < 0.02) {
+                    result += crashSequences.cfr[Math.floor(Math.random() * crashSequences.cfr.length)];
+                }
+                if (options.crashFernFlower && Math.random() < 0.02) {
+                    result += crashSequences.fernflower[Math.floor(Math.random() * crashSequences.fernflower.length)];
+                }
+                
+                // Insert bidirectional overrides
+                if (options.bidirectional && Math.random() < 0.03) {
+                    result += antiAnalysis.bidirectional[Math.floor(Math.random() * antiAnalysis.bidirectional.length)];
+                }
+                
+                // Insert zero-width characters
+                if (options.insertFake && Math.random() < 0.05) {
+                    const fakeChars = antiAnalysis.joiners.concat(antiAnalysis.variation);
+                    result += fakeChars[Math.floor(Math.random() * fakeChars.length)];
+                }
+                
+                // Normal character
+                result += charArray[Math.floor(Math.random() * charArray.length)];
+            }
+            
+            return result;
+        }
+
+        function calculateSecurityLevel(options) {
+            let score = 0;
+            if (options.randomize) score += 1;
+            if (options.insertFake) score += 2;
+            if (options.confuseLength) score += 1;
+            if (options.bidirectional) score += 3;
+            if (options.crashRecaf) score += 2;
+            if (options.crashJDGUI) score += 2;
+            if (options.crashCFR) score += 2;
+            if (options.crashFernFlower) score += 2;
+            
+            if (score >= 12) return 'EXTREME';
+            if (score >= 8) return 'High';
+            if (score >= 4) return 'Medium';
+            return 'Low';
+        }
+
+        function generate() {
+            const lineCount = parseInt(document.getElementById('lineCount').value) || 2000;
+            const baseLength = parseInt(document.getElementById('nameLength').value) || 512;
+            const charSetKey = document.getElementById('charSet').value;
+            const prefix = document.getElementById('prefix').value;
+            const suffix = document.getElementById('suffix').value;
+            
+            const options = {
+                randomize: document.getElementById('randomize').checked,
+                insertFake: document.getElementById('insertFake').checked,
+                confuseLength: document.getElementById('confuseLength').checked,
+                bidirectional: document.getElementById('bidirectional').checked,
+                crashRecaf: document.getElementById('crashRecaf').checked,
+                crashJDGUI: document.getElementById('crashJDGUI').checked,
+                crashCFR: document.getElementById('crashCFR').checked,
+                crashFernFlower: document.getElementById('crashFernFlower').checked,
+            };
+            
+            const charSet = charSets[charSetKey];
+            let chars = charSet.chars;
+            
+            if (options.randomize) {
+                chars = Array.from(chars).sort(() => Math.random() - 0.5).join('');
+            }
+            
+            const lines = [];
+            const usedNames = new Set();
+            
+            for (let i = 0; i < lineCount; i++) {
+                let length = options.confuseLength 
+                    ? baseLength + Math.floor(Math.random() * 200) - 100 
+                    : baseLength;
+                length = Math.max(50, Math.min(1000, length));
+                
+                let name;
+                let attempts = 0;
+                do {
+                    name = generateRandomString(length, chars, options);
+                    name = prefix + name + suffix;
+                    attempts++;
+                } while (usedNames.has(name) && attempts < 10);
+                
+                usedNames.add(name);
+                lines.push(name);
+            }
+            
+            const output = lines.join('\n');
+            document.getElementById('output').value = output;
+            
+            document.getElementById('statLines').textContent = lineCount.toLocaleString();
+            document.getElementById('statLength').textContent = Math.round(
+                lines.reduce((a, b) => a + b.length, 0) / lines.length
+            );
+            document.getElementById('statUnique').textContent = new Set(chars).size;
+            document.getElementById('statSize').textContent = (output.length / 1024).toFixed(1) + ' KB';
+            document.getElementById('statSecurity').textContent = calculateSecurityLevel(options);
+            
+            const firstLine = lines[0];
+            const display = firstLine.length > 150 ? firstLine.substring(0, 150) + '...' : firstLine;
+            document.getElementById('preview').textContent = display;
+        }
+
+        function downloadFile() {
+            const content = document.getElementById('output').value;
+            if (!content) return alert('Generate first!');
+            
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'classNames.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function copyToClipboard() {
+            const content = document.getElementById('output').value;
+            if (!content) return alert('Generate first!');
+            
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Copied!');
+            });
+        }
+
+        function clearOutput() {
+            document.getElementById('output').value = '';
+            document.getElementById('statLines').textContent = '0';
+            document.getElementById('statLength').textContent = '0';
+            document.getElementById('statUnique').textContent = '0';
+            document.getElementById('statSize').textContent = '0 KB';
+            document.getElementById('statSecurity').textContent = 'Low';
+            document.getElementById('preview').textContent = 'Click Generate to create class names...';
+        }
+
+        updateCharPreview();
+    </script>
+</body>
+</html>
